@@ -6,6 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -13,6 +16,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ComponentName adminComponent;
     private DevicePolicyManager devicePolicyManager;
+    private Switch cameraSwitch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,7 +34,29 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main); // This must be called before initializing our switch!
+
+        cameraSwitch = (Switch)this.findViewById(R.id.cameraSwitch);
+        cameraSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isEnabled) {
+                try {
+                    if (isEnabled) {
+                        devicePolicyManager.setCameraDisabled(adminComponent, false); // Enable camera.
+                    } else {
+                        devicePolicyManager.setCameraDisabled(adminComponent, true); // Disable camera.
+                    }
+                } catch (SecurityException securityException) {
+                    Log.i("Device Administrator", "Error occurred while disabling/enabling camera - " + securityException.getMessage());
+                }
+            }
+        });
+
+        if (devicePolicyManager.getCameraDisabled(adminComponent)) {
+            cameraSwitch.setChecked(false);
+        } else {
+            cameraSwitch.setChecked(true);
+        }
 
     }
 
